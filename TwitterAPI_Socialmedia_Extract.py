@@ -28,11 +28,6 @@ with open('credentials.txt','r') as listOfCredentials:
    access_token=(credentials[2].split('=')[1]).strip()
    access_token_secret=(credentials[3].split('=')[1]).strip()
 
-#consumer_key=""
-#consumer_secret=""
-#access_token=""
-#access_token_secret=""
-
 #--------Reading hashtags to access input contraints--------------------#
 #with open('hashtags.txt','r') as listOfHashtags:
 #   hashtags=listOfHashtags.readline()
@@ -41,8 +36,8 @@ with open('credentials.txt','r') as listOfCredentials:
 #------- Authentication and Authorisation-----------#
 auth=tweepy.OAuthHandler(consumer_key,consumer_secret)
 auth.set_access_token(access_token,access_token_secret)
-api = tweepy.API(auth, wait_on_rate_limit=True) # Using tweepy's API class
-
+api = tweepy.API(auth, wait_on_rate_limit=True,wait_on_rate_limit_notify=True) # Using tweepy's API class
+# Setting the 'rate_limit' arguments pauses the programe and notifies the user when limit reached than throwing an error
 #-----Posting a Tweet-----#
 #api.update_status("First tweet using #Python")
 
@@ -54,7 +49,8 @@ endDate="2020-07-07"
 numberOfTweets=7
 listOfTweets=[]
 listOfUserName=[]
-listOfTimeStamp=[]
+listOfDate=[]
+listOfTime=[]
 
 #-- Fetching Timeline data----#
 #for tweet in tweepy.Cursor(api.user_timeline).items(3): # Pagination allows to specify the amount of pages to extract information from
@@ -62,8 +58,22 @@ listOfTimeStamp=[]
 #    print(tweet.text)
 
 #--- Fetching Hashtag Data-----#
-listOfTweetsAttributes=tweepy.Cursor(api.search,q=searchWord,lang='en',since=startDate,until=endDate).items(numberOfTweets)
+listOfTweetsAttributes=tweepy.Cursor(api.search,
+                                     q=searchWord,
+                                     lang='en',
+                                     since=startDate, until=endDate,
+                                     result_type='recent',
+                                     include_entities=True,
+                                     monitor_rate_limit=True, 
+                                     wait_on_rate_limit=True).items(numberOfTweets)
 for tweet in listOfTweetsAttributes:
-    listOfTimeStamp.append(tweet.created_at) # Timestamp of the tweet
+    #-------Processing raw data------------#
+    dateTimeRawInformation=tweet.created_at # Time Stamps of tweets
+    date=dateTimeRawInformation.strftime("%d %b %Y ") # Extracting date information
+    time=dateTimeRawInformation.strftime("%H:%M:%S") # Extracting time information
+    
+    #----- Storing the meta data in a list ------------#
+    listOfDate.append(date) # Timestamp of the tweet
+    listOfTime.append(time)
     listOfUserName.append(tweet.user.screen_name) #User name
     listOfTweets.append(tweet.text) # Tweet Captions
