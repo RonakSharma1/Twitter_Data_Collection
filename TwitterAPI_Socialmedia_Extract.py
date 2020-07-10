@@ -23,9 +23,9 @@ import re
 def separateUrl(tweet):
     urlRegex = re.compile(r'https?://\S+|www\.\S+')  # Regular expression to identify URLs in a tweet
     url = re.findall(urlRegex,tweet)
-    imageURL=url[-1] #The last URL in a tweet is the valid image URL
+    tweetURL=url[-1] #The last URL in a tweet is the valid image URL
     tweetWithoutURL = urlRegex.sub(r'', tweet)
-    return imageURL,tweetWithoutURL
+    return tweetURL,tweetWithoutURL
 
 #-----------------------------#
 
@@ -57,7 +57,10 @@ listOfTweets=[]
 listOfUserName=[]
 listOfDate=[]
 listOfTime=[]
-listOfImageURL=[]
+listOfTweetURL=[]
+listOfMediaURL=[]
+x=[]
+
 #------- Authentication and Authorisation-----------#
 auth=tweepy.OAuthHandler(consumer_key,consumer_secret)
 auth.set_access_token(access_token,access_token_secret)
@@ -79,19 +82,25 @@ listOfTweetsAttributes=tweepy.Cursor(api.search,
                                      since=startDate, until=endDate,
                                      result_type='recent', # Returns recent tweets
                                      tweet_mode='extended', # Prevent getting truncated response as the return limit is 140 characters
+                                     exclude_replies=True,
+                                     include_entities=True,
                                      monitor_rate_limit=True).items(numberOfTweets)
 for tweet in listOfTweetsAttributes:
     #-------Processing raw date time data------------#
     dateTimeRawInformation=tweet.created_at # Time Stamps of tweets
     date=dateTimeRawInformation.strftime("%d %b %Y ") # Extracting date information
     time=dateTimeRawInformation.strftime("%H:%M:%S") # Extracting time information
+    x.append(tweet.full_text)
     
     #------ Sanitising tweet caption----------#
-    imageURL,tweetWithoutURL=separateUrl(tweet.full_text)
+    tweetURL,tweetWithoutURL=separateUrl(tweet.full_text)
     
     #----- Storing the meta data in a list ------------#
+    for image in  tweet.entities['media']: # Looping through all media entities associated with that tweet
+        listOfMediaURL.append(image['media_url']) # Accesing the 'url' attribute of that media
     listOfDate.append(date) # Timestamp of the tweet
     listOfTime.append(time)
     listOfUserName.append(tweet.user.screen_name) #User name
     listOfTweets.append(tweetWithoutURL) # Tweet Captions
-    listOfImageURL.append(imageURL)
+    listOfTweetURL.append(tweetURL)
+    
