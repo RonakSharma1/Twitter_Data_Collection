@@ -9,14 +9,27 @@ Created on Mon Jul  6 14:50:09 2020
 # Guide
 # http://docs.tweepy.org/en/latest/
 # https://github.com/tweepy/tweepy
+# Tutorial: https://www.earthdatascience.org/courses/use-data-open-source-python/intro-to-apis/social-media-text-mining-python/
 # API methods: http://docs.tweepy.org/en/latest/api.html#api-reference
 
 # Installtion of library for Anaconda
 # conda install -c conda-forge tweepy
-
+   
 # Libraries
 import tweepy
+import re
 #import pandas
+#------------ Functions--------#
+def separateUrl(tweet):
+    urlRegex = re.compile(r'https?://\S+|www\.\S+')  # Regular expression to identify URLs in a tweet
+    url = re.findall(urlRegex,tweet)
+    imageURL=url[-1] #The last URL in a tweet is the valid image URL
+    tweetWithoutURL = urlRegex.sub(r'', tweet)
+    return imageURL,tweetWithoutURL
+
+#-----------------------------#
+
+
 
 #-------------Reading credentials to access Twitter API-------------------#
 # Each line is stored as an element in the list. Each element is then split
@@ -37,14 +50,14 @@ with open('hashtags.txt','r') as listOfHashtags:
 #---Search Paramters-----#
 twitterFilter= " -filter:retweets" + " filter:twimg"# Filtering on tweets with images and removing any retweets
 finalSearchQuery=twitterQuery+twitterFilter
-startDate = "2020-07-03"
-endDate="2020-07-08" # Exclusive of the date. +1 this argument to include the date
+startDate = "2020-07-05"
+endDate="2020-07-11" # Exclusive of the date. +1 this argument to include the date
 numberOfTweets=7
 listOfTweets=[]
 listOfUserName=[]
 listOfDate=[]
 listOfTime=[]
-
+listOfImageURL=[]
 #------- Authentication and Authorisation-----------#
 auth=tweepy.OAuthHandler(consumer_key,consumer_secret)
 auth.set_access_token(access_token,access_token_secret)
@@ -61,19 +74,24 @@ api = tweepy.API(auth, wait_on_rate_limit=True,wait_on_rate_limit_notify=True) #
 
 #--- Fetching Hashtag Data-----#
 listOfTweetsAttributes=tweepy.Cursor(api.search,
-                                     q=finalSearchQuery,
-                                     lang='en',
+                                     q=finalSearchQuery, # Search Query
+                                     lang='en', # Language
                                      since=startDate, until=endDate,
-                                     result_type='recent',
+                                     result_type='recent', # Returns recent tweets
+                                     tweet_mode='extended', # Prevent getting truncated response as the return limit is 140 characters
                                      monitor_rate_limit=True).items(numberOfTweets)
 for tweet in listOfTweetsAttributes:
-    #-------Processing raw data------------#
+    #-------Processing raw date time data------------#
     dateTimeRawInformation=tweet.created_at # Time Stamps of tweets
     date=dateTimeRawInformation.strftime("%d %b %Y ") # Extracting date information
     time=dateTimeRawInformation.strftime("%H:%M:%S") # Extracting time information
+    
+    #------ Sanitising tweet caption----------#
+    imageURL,tweetWithoutURL=separateUrl(tweet.full_text)
     
     #----- Storing the meta data in a list ------------#
     listOfDate.append(date) # Timestamp of the tweet
     listOfTime.append(time)
     listOfUserName.append(tweet.user.screen_name) #User name
-    listOfTweets.append(tweet.text) # Tweet Captions
+    listOfTweets.append(tweetWithoutURL) # Tweet Captions
+    listOfImageURL.append(imageURL)
