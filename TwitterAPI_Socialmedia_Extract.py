@@ -19,11 +19,12 @@ Created on Mon Jul  6 14:50:09 2020
 import tweepy
 import re
 import urllib.request 
-#import pandas
+import csv
 #------------ Functions--------#
 # Sanitises the URL be separating the URLs and the actual text in a Tweet
 def separateUrl(tweet):
-    urlRegex = re.compile(r'https?://\S+|www\.\S+')  # Regular expression to identify URLs in a tweet
+    # Regular expression to identify URLs in a tweet
+    urlRegex = re.compile(r'https?://\S+|www\.\S+')   # Starts with 'https' and then continous until no whitespace is found. That is essentially the format of a URL
     url = re.findall(urlRegex,tweet)
     tweetURL=url[-1] #The last URL in a tweet is the valid image URL
     tweetWithoutURL = urlRegex.sub(r'', tweet)
@@ -34,8 +35,6 @@ def downloadTwitterImage(imageUrl,filenameTweet,filenameImage,imageExtension):
     urllib.request.urlretrieve(imageUrl,str(filenameTweet)+str(filenameImage)+imageExtension)
 
 #-----------------------------#
-
-
 
 #-------------Reading credentials to access Twitter API-------------------#
 # Each line is stored as an element in the list. Each element is then split
@@ -56,8 +55,8 @@ with open('hashtags.txt','r') as listOfHashtags:
 #---Search Paramters-----#
 twitterFilter= " -filter:retweets" + " filter:twimg"# Filtering on tweets with images and removing any retweets
 finalSearchQuery=twitterQuery+twitterFilter
-startDate = "2020-07-05"
-endDate="2020-07-11" # Exclusive of the date. +1 this argument to include the date
+startDate = "2020-07-10"
+endDate="2020-07-12" # Exclusive of the date. +1 this argument to include the date
 numberOfTweets=7
 listOfTweets=[]
 listOfUserName=[]
@@ -65,7 +64,6 @@ listOfDate=[]
 listOfTime=[]
 listOfTweetURL=[]
 listOfMediaURL=dict()
-x=[]
 uniqueIdentifierTweet=1
 uniqueIdenifierImage='a'
 
@@ -99,7 +97,6 @@ for tweet in listOfTweetsAttributes:
     dateTimeRawInformation=tweet.created_at # Time Stamps of tweets
     date=dateTimeRawInformation.strftime("%d %b %Y ") # Extracting date information
     time=dateTimeRawInformation.strftime("%H:%M:%S") # Extracting time information
-    x.append(tweet.full_text)
     
     #------ Sanitising tweet caption----------#
     tweetURL,tweetWithoutURL=separateUrl(tweet.full_text)
@@ -117,6 +114,13 @@ for tweet in listOfTweetsAttributes:
     listOfTweetURL.append(tweetURL)
     uniqueIdentifierTweet+=1
     uniqueIdenifierImage='a'
-    
-   
-    
+
+# Writing to '.csv' file
+csvFields=['Name','Date','Time','Image URL','Tweet URL']
+filename = "Twitter_API_Result.csv"
+with open(filename, 'w') as csvfile:  
+    csvwriter = csv.writer(csvfile)    
+    csvwriter.writerow(csvFields)
+    for tweetCount in range(uniqueIdentifierTweet-1):
+        csvRow=[listOfUserName[tweetCount],listOfDate[tweetCount],listOfTime[tweetCount],listOfMediaURL[tweetCount+1],listOfTweetURL[tweetCount]]
+        csvwriter.writerow(csvRow) 
