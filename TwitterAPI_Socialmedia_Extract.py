@@ -18,14 +18,20 @@ Created on Mon Jul  6 14:50:09 2020
 # Libraries
 import tweepy
 import re
+import urllib.request 
 #import pandas
 #------------ Functions--------#
+# Sanitises the URL be separating the URLs and the actual text in a Tweet
 def separateUrl(tweet):
     urlRegex = re.compile(r'https?://\S+|www\.\S+')  # Regular expression to identify URLs in a tweet
     url = re.findall(urlRegex,tweet)
     tweetURL=url[-1] #The last URL in a tweet is the valid image URL
     tweetWithoutURL = urlRegex.sub(r'', tweet)
     return tweetURL,tweetWithoutURL
+
+# Downloads the images using the Twitter URL
+def downloadTwitterImage(imageUrl,filenameTweet,filenameImage,imageExtension):
+    urllib.request.urlretrieve(imageUrl,str(filenameTweet)+str(filenameImage)+imageExtension)
 
 #-----------------------------#
 
@@ -58,8 +64,10 @@ listOfUserName=[]
 listOfDate=[]
 listOfTime=[]
 listOfTweetURL=[]
-listOfMediaURL=[]
+listOfMediaURL=dict()
 x=[]
+uniqueIdentifierTweet=1
+uniqueIdenifierImage='a'
 
 #------- Authentication and Authorisation-----------#
 auth=tweepy.OAuthHandler(consumer_key,consumer_secret)
@@ -86,6 +94,7 @@ listOfTweetsAttributes=tweepy.Cursor(api.search,
                                      include_entities=True,
                                      monitor_rate_limit=True).items(numberOfTweets)
 for tweet in listOfTweetsAttributes:
+    
     #-------Processing raw date time data------------#
     dateTimeRawInformation=tweet.created_at # Time Stamps of tweets
     date=dateTimeRawInformation.strftime("%d %b %Y ") # Extracting date information
@@ -97,10 +106,17 @@ for tweet in listOfTweetsAttributes:
     
     #----- Storing the meta data in a list ------------#
     for image in  tweet.entities['media']: # Looping through all media entities associated with that tweet
-        listOfMediaURL.append(image['media_url']) # Accesing the 'url' attribute of that media
+        listOfMediaURL[uniqueIdentifierTweet]=image['media_url'] # Dictionary allows to store tweets assiated with multiple images
+        downloadTwitterImage(image['media_url'],uniqueIdentifierTweet,uniqueIdenifierImage,".jpg")
+        uniqueIdenifierImage = chr(ord(uniqueIdenifierImage) + 1)
+        
     listOfDate.append(date) # Timestamp of the tweet
     listOfTime.append(time)
     listOfUserName.append(tweet.user.screen_name) #User name
     listOfTweets.append(tweetWithoutURL) # Tweet Captions
     listOfTweetURL.append(tweetURL)
+    uniqueIdentifierTweet+=1
+    uniqueIdenifierImage='a'
+    
+   
     
