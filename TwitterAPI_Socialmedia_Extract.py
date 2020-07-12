@@ -29,14 +29,15 @@ def separateUrl(tweet):
     url = re.findall(urlRegex,tweet)
     tweetURL=url[-1] #The last URL in a tweet is the valid image URL
     tweetWithoutURL = urlRegex.sub(r'', tweet)
-    return tweetURL,tweetWithoutURL
+    tweetWithoutURL=tweetWithoutURL.replace('\n','').replace('\t','').strip() # Removes next line character and tab spaces before encoding
+    return tweetURL,tweetWithoutURL.encode('ascii', 'ignore')#Encoding only ascii characters and ignoring the rest of characters
 
 # Downloads the images using the Twitter URL
 def downloadTwitterImage(imageUrl,filenameTweet,filenameImage,imageExtension):
     urllib.request.urlretrieve(imageUrl,str(filenameTweet)+str(filenameImage)+imageExtension)
     
-def writeToTwitterCSV(csvWriterPointer,userName,date,time,mediaURL,twitterURL):
-    csvRow=[userName,date,time,mediaURL,twitterURL]
+def writeToTwitterCSV(csvWriterPointer,userName,date,time,tweetWithoutURL,mediaURL,twitterURL):
+    csvRow=[userName,date,time,tweetWithoutURL,mediaURL,twitterURL]
     csvWriterPointer.writerow(csvRow) 
 
 
@@ -44,7 +45,7 @@ def writeToTwitterCSV(csvWriterPointer,userName,date,time,mediaURL,twitterURL):
 filename = "Twitter_API_Result.csv"
 csvFileObject = open(filename, "w")
 csvWriter = csv.writer(csvFileObject)
-csvFields=['Name','Date','Time','Image URL','Tweet URL']    
+csvFields=['Name','Date','Time','Twitter Text','Image URL','Tweet URL']    
 csvWriter.writerow(csvFields)
 #-----------------------------------------#
 
@@ -58,7 +59,6 @@ with open('credentials.txt','r') as listOfCredentials:
    consumer_secret=(credentials[1].split('=')[1]).strip()
    access_token=(credentials[2].split('=')[1]).strip()
    access_token_secret=(credentials[3].split('=')[1]).strip()
-
 
 
 #--------Reading hashtags to access input contraints--------------------#
@@ -121,7 +121,7 @@ for tweet in listOfTweetsAttributes:
     
 
     #----- Storing the meta data in a list ------------#
-    for image in  tweet.extended_entities['media']: # Looping through all media entities associated with that tweet
+    for image in  tweet.extended_entities['media']: # 'extended_entities' allows to loop through all media entities
         dictOfMediaURL[uniqueIdentifierTweet].append(image['media_url']) # Dictionary allows to store tweets assiated with multiple images
         downloadTwitterImage(image['media_url'],uniqueIdentifierTweet,uniqueIdenifierImage,".jpg")
         uniqueIdenifierImage = chr(ord(uniqueIdenifierImage) + 1)
@@ -132,7 +132,7 @@ for tweet in listOfTweetsAttributes:
     listOfUserName.append(tweet.user.screen_name) #User name
     listOfTweets.append(tweetWithoutURL) # Tweet Captions
     listOfTweetURL.append(tweetURL)
-    writeToTwitterCSV(csvWriter,tweet.user.screen_name,date,time,dictOfMediaURL[uniqueIdentifierTweet],tweetURL)
+    writeToTwitterCSV(csvWriter,tweet.user.screen_name,date,time,tweetWithoutURL,dictOfMediaURL[uniqueIdentifierTweet],tweetURL)
     uniqueIdentifierTweet+=1
     uniqueIdenifierImage='a'
     
