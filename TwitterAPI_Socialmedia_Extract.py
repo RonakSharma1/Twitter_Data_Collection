@@ -20,6 +20,7 @@ import tweepy
 import re
 import urllib.request 
 import csv
+from collections import defaultdict
 #------------ Functions--------#
 # Sanitises the URL be separating the URLs and the actual text in a Tweet
 def separateUrl(tweet):
@@ -34,8 +35,7 @@ def separateUrl(tweet):
 def downloadTwitterImage(imageUrl,filenameTweet,filenameImage,imageExtension):
     urllib.request.urlretrieve(imageUrl,str(filenameTweet)+str(filenameImage)+imageExtension)
 
-#-----------------------------#
-
+   
 #-------------Reading credentials to access Twitter API-------------------#
 # Each line is stored as an element in the list. Each element is then split
 # at '=' character and then the trailing '\n' is removed.
@@ -46,6 +46,7 @@ with open('credentials.txt','r') as listOfCredentials:
    access_token=(credentials[2].split('=')[1]).strip()
    access_token_secret=(credentials[3].split('=')[1]).strip()
 
+
 #--------Reading hashtags to access input contraints--------------------#
 with open('hashtags.txt','r') as listOfHashtags:
    hashtags=listOfHashtags.readline()
@@ -55,15 +56,16 @@ with open('hashtags.txt','r') as listOfHashtags:
 #---Search Paramters-----#
 twitterFilter= " -filter:retweets" + " filter:twimg"# Filtering on tweets with images and removing any retweets
 finalSearchQuery=twitterQuery+twitterFilter
-startDate = "2020-07-10"
-endDate="2020-07-12" # Exclusive of the date. +1 this argument to include the date
+startDate = "2020-07-05"
+endDate="2020-07-07" # Exclusive of the date. +1 this argument to include the date
 numberOfTweets=7
 listOfTweets=[]
 listOfUserName=[]
 listOfDate=[]
 listOfTime=[]
 listOfTweetURL=[]
-listOfMediaURL=dict()
+dictOfMediaURL=defaultdict(list)
+dictOfMediaName=dict()
 uniqueIdentifierTweet=1
 uniqueIdenifierImage='a'
 
@@ -91,6 +93,7 @@ listOfTweetsAttributes=tweepy.Cursor(api.search,
                                      exclude_replies=True,
                                      include_entities=True,
                                      monitor_rate_limit=True).items(numberOfTweets)
+
 for tweet in listOfTweetsAttributes:
     
     #-------Processing raw date time data------------#
@@ -101,26 +104,20 @@ for tweet in listOfTweetsAttributes:
     #------ Sanitising tweet caption----------#
     tweetURL,tweetWithoutURL=separateUrl(tweet.full_text)
     
+
     #----- Storing the meta data in a list ------------#
-    for image in  tweet.entities['media']: # Looping through all media entities associated with that tweet
-        listOfMediaURL[uniqueIdentifierTweet]=image['media_url'] # Dictionary allows to store tweets assiated with multiple images
+    for image in  tweet.extended_entities['media']: # Looping through all media entities associated with that tweet
+        dictOfMediaURL[uniqueIdentifierTweet].append(image['media_url']) # Dictionary allows to store tweets assiated with multiple images
         downloadTwitterImage(image['media_url'],uniqueIdentifierTweet,uniqueIdenifierImage,".jpg")
         uniqueIdenifierImage = chr(ord(uniqueIdenifierImage) + 1)
+        
         
     listOfDate.append(date) # Timestamp of the tweet
     listOfTime.append(time)
     listOfUserName.append(tweet.user.screen_name) #User name
     listOfTweets.append(tweetWithoutURL) # Tweet Captions
     listOfTweetURL.append(tweetURL)
+#    csvRow=[tweet.user.screen_name,date,time,dictOfMediaURL,listOfTweetURL]
     uniqueIdentifierTweet+=1
     uniqueIdenifierImage='a'
 
-# Writing to '.csv' file
-csvFields=['Name','Date','Time','Image URL','Tweet URL']
-filename = "Twitter_API_Result.csv"
-with open(filename, 'w') as csvfile:  
-    csvwriter = csv.writer(csvfile)    
-    csvwriter.writerow(csvFields)
-    for tweetCount in range(uniqueIdentifierTweet-1):
-        csvRow=[listOfUserName[tweetCount],listOfDate[tweetCount],listOfTime[tweetCount],listOfMediaURL[tweetCount+1],listOfTweetURL[tweetCount]]
-        csvwriter.writerow(csvRow) 
