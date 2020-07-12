@@ -34,6 +34,19 @@ def separateUrl(tweet):
 # Downloads the images using the Twitter URL
 def downloadTwitterImage(imageUrl,filenameTweet,filenameImage,imageExtension):
     urllib.request.urlretrieve(imageUrl,str(filenameTweet)+str(filenameImage)+imageExtension)
+    
+def writeToTwitterCSV(csvWriterPointer,userName,date,time,mediaURL,twitterURL):
+    csvRow=[userName,date,time,mediaURL,twitterURL]
+    csvWriterPointer.writerow(csvRow) 
+
+
+#----------Creating a CSV file-------------#
+filename = "Twitter_API_Result.csv"
+csvFileObject = open(filename, "w")
+csvWriter = csv.writer(csvFileObject)
+csvFields=['Name','Date','Time','Image URL','Tweet URL']    
+csvWriter.writerow(csvFields)
+#-----------------------------------------#
 
    
 #-------------Reading credentials to access Twitter API-------------------#
@@ -47,17 +60,19 @@ with open('credentials.txt','r') as listOfCredentials:
    access_token_secret=(credentials[3].split('=')[1]).strip()
 
 
+
 #--------Reading hashtags to access input contraints--------------------#
 with open('hashtags.txt','r') as listOfHashtags:
    hashtags=listOfHashtags.readline()
    hashtags=hashtags.split(',')
    twitterQuery=' OR '.join(hashtags)
 
+ 
 #---Search Paramters-----#
 twitterFilter= " -filter:retweets" + " filter:twimg"# Filtering on tweets with images and removing any retweets
 finalSearchQuery=twitterQuery+twitterFilter
-startDate = "2020-07-05"
-endDate="2020-07-07" # Exclusive of the date. +1 this argument to include the date
+startDate = "2020-07-10"
+endDate="2020-07-13" # Exclusive of the date. +1 this argument to include the date
 numberOfTweets=7
 listOfTweets=[]
 listOfUserName=[]
@@ -66,7 +81,7 @@ listOfTime=[]
 listOfTweetURL=[]
 dictOfMediaURL=defaultdict(list)
 dictOfMediaName=dict()
-uniqueIdentifierTweet=1
+uniqueIdentifierTweet=0
 uniqueIdenifierImage='a'
 
 #------- Authentication and Authorisation-----------#
@@ -117,7 +132,8 @@ for tweet in listOfTweetsAttributes:
     listOfUserName.append(tweet.user.screen_name) #User name
     listOfTweets.append(tweetWithoutURL) # Tweet Captions
     listOfTweetURL.append(tweetURL)
-#    csvRow=[tweet.user.screen_name,date,time,dictOfMediaURL,listOfTweetURL]
+    writeToTwitterCSV(csvWriter,tweet.user.screen_name,date,time,dictOfMediaURL[uniqueIdentifierTweet],tweetURL)
     uniqueIdentifierTweet+=1
     uniqueIdenifierImage='a'
-
+    
+csvFileObject.close()
