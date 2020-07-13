@@ -77,21 +77,25 @@ with open('hashtags.txt','r') as listOfHashtags:
    hashtags=hashtags.split(',')
    twitterQuery=' OR '.join(hashtags)
 
- 
+#----- Parameters for Debugging/Accessing Twitter data within the terminal
+#listOfTweets=[]
+#listOfUserName=[]
+#listOfDate=[]
+#listOfTime=[]
+#listOfTweetURL=[]
+
 #---Search Paramters-----#
 twitterFilter= " -filter:retweets" + " filter:twimg"# Filtering on tweets with images and removing any retweets
 finalSearchQuery=twitterQuery+twitterFilter # Final Search query consisting of hashtags and filters
 startDate = "2020-07-10"
 endDate="2020-07-13" # Exclusive of the date. +1 this argument to include the date
 numberOfTweets=7
-listOfTweets=[]
-listOfUserName=[]
-listOfDate=[]
-listOfTime=[]
-listOfTweetURL=[]
+
+#--- Initialising Data Structures for Twitter Data----#
 tweetImageNames=[]
 dictOfMediaURL=defaultdict(list)
-dictOfMediaName=dict()
+
+#--- Initialising Counters-----#
 uniqueIdentifierTweet=0
 displayMessageCounter=1
 uniqueIdenifierImage='a'
@@ -135,11 +139,7 @@ for tweet in listOfTweetsAttributes:
         tweetImageNames.append(str(uniqueIdentifierTweet)+uniqueIdenifierImage)
         uniqueIdenifierImage = chr(ord(uniqueIdenifierImage) + 1)
     
-    listOfDate.append(tweetDate) # Timestamp of the tweet
-    listOfTime.append(tweetTime)
-    listOfUserName.append(tweet.user.screen_name) #User name
-    listOfTweets.append(tweetWithoutURL) # Tweet Captions
-    listOfTweetURL.append(tweetURL)
+    #----- Storing Twitter Data into a CSV file using 'writeToTwitterCSV'
     writeToTwitterCSV(csvWriter,(uniqueIdentifierTweet+1),tweet.user.screen_name,tweetDate,tweetTime,tweetWithoutURL,tweetImageNames,dictOfMediaURL[uniqueIdentifierTweet],tweetURL)
     
     #-------Counters--------#
@@ -152,5 +152,12 @@ for tweet in listOfTweetsAttributes:
     if(displayMessageCounter==2): # Counter to display a message every 10 tweets
         print("Tweets added to CSV file") 
         displayMessageCounter=1 # Resetting the Counter
-    
+        
+    #--- Storing Twitter Data for accessing at later stages for debugging
+#    listOfDate.append(tweetDate) # Timestamp of the tweet
+#    listOfTime.append(tweetTime)
+#    listOfUserName.append(tweet.user.screen_name) #User name
+#    listOfTweets.append(tweetWithoutURL) # Tweet Captions
+#    listOfTweetURL.append(tweetURL)
+
 csvFileObject.close()
