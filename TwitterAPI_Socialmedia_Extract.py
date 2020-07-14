@@ -5,16 +5,6 @@ Created on Mon Jul  6 14:50:09 2020
 
 @author: ronaksharma
 """
-
-# Guide
-# http://docs.tweepy.org/en/latest/
-# https://github.com/tweepy/tweepy
-# Tutorial: https://www.earthdatascience.org/courses/use-data-open-source-python/intro-to-apis/social-media-text-mining-python/
-# API methods: http://docs.tweepy.org/en/latest/api.html#api-reference
-
-# Installtion of library for Anaconda
-# conda install -c conda-forge tweepy
-   
 # Libraries
 import tweepy
 import re
@@ -65,6 +55,8 @@ def counterResetter(tweetIndex,tweetImageIndex,imageName):
     del imageName[:] # Re-initialised the image names assuming the whole tweet will fail instead of just a single image
     return tweetIndex,tweetImageIndex,imageName
 
+print("-"*10,"Twitter Media Extraction Programme","-"*10)
+
 #----------Creating a CSV file-------------#
 filename = "Twitter_API_Result.csv"
 csvFileObject = open(filename, "w")
@@ -72,6 +64,7 @@ csvWriter = csv.writer(csvFileObject)
 csvFields=['S.No','Name','Date','Time','Twitter Text','Image Titles','Image URL','Tweet URL']    
 csvWriter.writerow(csvFields)
 #-----------------------------------------#
+
 open("Error_Log.txt", "w").close() # Deleting all the erros from any previous sessions
    
 #-------------Reading credentials to access Twitter API-------------------#
@@ -84,20 +77,12 @@ with open('credentials.txt','r') as listOfCredentials:
    access_token=(credentials[2].split('=')[1]).strip()
    access_token_secret=(credentials[3].split('=')[1]).strip()
 
-print("-"*10,"Twitter Media Extraction Programme","-"*10)
 #--------Reading hashtags to access input contraints--------------------#
 with open('hashtags.txt','r') as listOfHashtags:
    hashtags=listOfHashtags.readline()
    hashtags=hashtags.split(',')
    twitterQuery=' OR '.join(hashtags)
-
-#----- Parameters for Debugging/Accessing Twitter data within the terminal
-#listOfTweets=[]
-#listOfUserName=[]
-#listOfDate=[]
-#listOfTime=[]
-#listOfTweetURL=[]
-
+   
 #---User Input Paramters-----#
 twitterFilter= " -filter:retweets" + " filter:twimg"# Filtering on tweets with images and removing any retweets
 finalSearchQuery=twitterQuery+twitterFilter # Final Search query consisting of hashtags and filters
@@ -127,14 +112,6 @@ except tweepy.TweepError as twitterError: # Raise authentication failure if an e
 if(authorisationFailure==0):
     # Setting the 'rate_limit' arguments pauses the programe and notifies the user when limit reached than throwing an error
     api = tweepy.API(auth, wait_on_rate_limit=True,wait_on_rate_limit_notify=True,compression=True) # Using tweepy's API class
-    
-    #-----Posting a Tweet-----#
-    #api.update_status("First tweet using #Python")
-    
-    #-- Fetching Timeline data----#
-    #for tweet in tweepy.Cursor(api.user_timeline).items(3): # Pagination allows to specify the amount of pages to extract information from
-    ##for tweet in publicTweets:
-    #    print(tweet.text)
     
     #--- Fetching Twitter query data-----#
     listOfTweetsAttributes=tweepy.Cursor(api.search,
@@ -179,12 +156,5 @@ if(authorisationFailure==0):
         except: # Raises an error when the programme fails due to any other reason except from twitter API
             logTwitterError(uniqueIdentifierTweet,"Unknown error found") # Logs the error
             uniqueIdentifierTweet,uniqueIdenifierImage,tweetImageNames=counterResetter(uniqueIdentifierTweet,uniqueIdenifierImage,tweetImageNames)
-            
-        #--- Storing Twitter Data for accessing at later stages for debugging
-    #    listOfDate.append(tweetDate) # Timestamp of the tweet
-    #    listOfTime.append(tweetTime)
-    #    listOfUserName.append(tweet.user.screen_name) #User name
-    #    listOfTweets.append(tweetWithoutURL) # Tweet Captions
-    #    listOfTweetURL.append(tweetURL)
     
     csvFileObject.close()
