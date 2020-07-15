@@ -1,28 +1,33 @@
-#Twitter_Data_Collection
+# Aim
+Within a user specified timeframe, the programme extracts the Twitter data (Tweets) that matches user specified query parameters i.e. a list of hashtags. 
 
-#Aim
+# Data Constraints
+The programme filters out any retweets, replies, non-image tweets and also sanitises tweets by removing the non-ASCII characters.
+
+# Result
+1. 'Twitter_API_Result.csv': Stores the following information related to the data constrained tweets; Twitter Handle, Time Stamp, Tweet(Description), Names of Images associated to each Tweet,URL of images, URL of Tweets
+2. Images are downloaded and stored locally using their URL extracted from Tweets  
+3. 'Error_Log.txt': Logs any errors generated during the API call
+
+# Structure of Folder
+1. 'TwitterAPI_Socialmedia_Extract.py': Main Python file to run
+2. 'credentials.txt': Contains the credentials of a Twitter Developer Account
+3. 'hashtags.txt': Contains the list of hashtags (or any other query parameter) separated by ','
 
 
-#Installation
-1. Installing 'Tweepy' library on Anaconda
+# Installation
+1. Installing 'Tweepy' library in Anaconda on Mac OS
 ```
 conda install -c conda-forge tweepy
 ```
 
-#Procedure
-1. Clone the 'credentials.txt' and replace the keys/tokens with the your credentials
+# Procedure
+1. Clone the 'credentials.txt' and replace the keys and tokens with the your credentials
 2. Clone the 'hashtags.txt' and enter the query parameters separated by ','
 3. Run 'TwitterAPI_Socialmedia_Extract.py'. You will be asked to enter start and end date of the search and number of Tweets you want to store
  
-#Result
-1. A 'Twitter_API_Result.csv' will be generated consisting of username, timestamps, twitter text, image name, and URLs of images and tweets
-2. An 'Error_Log.txt' will be created consisting of any errors received during the API calls
 
-#Structure of Folder
-
-
-
-#Guidelines
-1.[Twitter Query Python Tutorial](https://www.earthdatascience.org/courses/use-data-open-source-python/intro-to-apis/social-media-text-mining-python/)
-2.[Tweepy Documentation](https://github.com/tweepy/tweepy)
-3.[Tweepy GitHub Repository](https://github.com/tweepy/tweepy)
+# Documentation
+1. [Twitter Query Python Tutorial](https://www.earthdatascience.org/courses/use-data-open-source-python/intro-to-apis/social-media-text-mining-python/)
+2. [Tweepy Documentation](https://github.com/tweepy/tweepy)
+3. [Tweepy GitHub Repository](https://github.com/tweepy/tweepy)
