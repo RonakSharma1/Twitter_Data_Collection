@@ -71,12 +71,12 @@ open("Error_Log.txt", "w").close() # Deleting all the erros from any previous se
 # Each line is stored as an element in the list. Each element is then split
 # at '=' character and then the trailing '\n' is removed.
 with open('credentials.txt','r') as listOfCredentials:
-   credentials=listOfCredentials.readlines()
-   consumer_key=(credentials[0].split('=')[1]).strip()
-   consumer_secret=(credentials[1].split('=')[1]).strip()
-   access_token=(credentials[2].split('=')[1]).strip()
-   access_token_secret=(credentials[3].split('=')[1]).strip()
-
+    credentials=listOfCredentials.readlines()
+    consumer_key=(credentials[0].split('=')[1]).strip()
+    consumer_secret=(credentials[1].split('=')[1]).strip()
+    access_token=(credentials[2].split('=')[1]).strip()
+    access_token_secret=(credentials[3].split('=')[1]).strip()
+    
 #--------Reading hashtags to access input contraints--------------------#
 with open('hashtags.txt','r') as listOfHashtags:
    hashtags=listOfHashtags.readline()
