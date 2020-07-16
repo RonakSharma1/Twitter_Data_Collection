@@ -79,9 +79,13 @@ with open('credentials.txt','r') as listOfCredentials:
 
 #--------Reading hashtags to access input contraints--------------------#
 with open('hashtags.txt','r') as listOfHashtags:
-   hashtags=listOfHashtags.readline()
-   hashtags=hashtags.split(',')
-   twitterQuery=' OR '.join(hashtags)
+   hashtags=listOfHashtags.readlines()
+   hashtagsFirstLine=hashtags[0].split(',')
+   hashtagsSecondLine=hashtags[1].split(',')
+   queryFirstLine=' OR '.join(hashtagsFirstLine)
+   querySecondLine=' OR '.join(hashtagsSecondLine)
+   twitterQuery='('+queryFirstLine+') '+'('+querySecondLine+')'
+   print(twitterQuery)
    
 #---User Input Paramters-----#
 twitterFilter= " -filter:retweets" + " filter:twimg"# Filtering on tweets with images and removing any retweets
