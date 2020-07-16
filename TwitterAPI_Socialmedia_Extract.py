@@ -76,7 +76,7 @@ with open('credentials.txt','r') as listOfCredentials:
     consumer_secret=(credentials[1].split('=')[1]).strip()
     access_token=(credentials[2].split('=')[1]).strip()
     access_token_secret=(credentials[3].split('=')[1]).strip()
-    
+
 #--------Reading hashtags to access input contraints--------------------#
 with open('hashtags.txt','r') as listOfHashtags:
    hashtags=listOfHashtags.readline()
@@ -86,8 +86,8 @@ with open('hashtags.txt','r') as listOfHashtags:
 #---User Input Paramters-----#
 twitterFilter= " -filter:retweets" + " filter:twimg"# Filtering on tweets with images and removing any retweets
 finalSearchQuery=twitterQuery+twitterFilter # Final Search query consisting of hashtags and filters
-startDate = input("\nEnter the start date for the search(YY-MM-DD)\n") # Date to start searching the Twitter database
-endDate=input("\nEnter the end date(exclusive) for the search(YY-MM-DD)\n") # Exclusive of the date. +1 this argument to include the date
+startDate = input("\nEnter the start date for the search(YYYY-MM-DD)\n") # Date to start searching the Twitter database
+endDate=input("\nEnter the end date(exclusive) for the search(YYYY-MM-DD)\n") # Exclusive of the date. +1 this argument to include the date
 numberOfTweets=int(input("\nEnter the number of tweets you want to store\n"))
 
 #--- Initialising Data Structures for Twitter Data----#
