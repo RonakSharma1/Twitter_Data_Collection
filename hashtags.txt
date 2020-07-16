@@ -1,1 +1,2 @@
 #workingfromhome,#remotework,#homeoffice,#workfromhome,#wfhsetup,#MyHomeOffice,#homesetup
+setup,#workspace
