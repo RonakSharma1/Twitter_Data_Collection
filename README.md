@@ -1,5 +1,5 @@
 # Aim
-Within a user specified timeframe, the programme extracts the Twitter data (Tweets) that matches user specified query parameters i.e. a list of hashtags. 
+Within a user specified timeframe, the programme extracts the Twitter data (Tweets) that matches user specified query parameters i.e. a list of hashtags and expressions
 
 # Data Constraints
 The programme filters out any retweets, replies, non-image tweets and also sanitises tweets by removing the non-ASCII characters.
@@ -12,7 +12,7 @@ The programme filters out any retweets, replies, non-image tweets and also sanit
 # Structure of Folder
 1. 'TwitterAPI_Socialmedia_Extract.py': Main Python file to run
 2. 'credentials.txt': Contains the credentials of a Twitter Developer Account
-3. 'hashtags.txt': Contains the list of hashtags (or any other query parameter) separated by ','
+3. 'hashtags.txt': Contains the list of hashtags (or any other query parameter) separated by ','. To understand the format of this file, check the Procedure Section
 
 
 # Installation
@@ -22,8 +22,13 @@ conda install -c conda-forge tweepy
 ```
 
 # Procedure
-1. Clone the 'credentials.txt' and replace the keys and tokens with the your credentials
-2. Clone the 'hashtags.txt' and enter the query parameters separated by ','
+1. Clone the 'credentials.txt' and replace the keys and tokens with the your credentials obtained via Twitter Developer Account
+
+2. Clone the 'hashtags.txt' and enter the query parameters separated by ','.All the queries in the first row are OR'd. This expression is then AND'd with the OR'd query expression of second row. Example:
+Row1: Science,Data
+Row2. Research,Academic
+Final Query= (Science OR Data) AND (Research OR Academic)
+
 3. Run 'TwitterAPI_Socialmedia_Extract.py'. You will be asked to enter start and end date of the search and number of Tweets you want to store
  
 
