@@ -55,7 +55,7 @@ def counterResetter(tweetIndex,tweetImageIndex,imageName):
     del imageName[:] # Re-initialised the image names assuming the whole tweet will fail instead of just a single image
     return tweetIndex,tweetImageIndex,imageName
 
-print("-"*10,"Twitter Media Extraction Programme","-"*10)
+print("\n"+"-"*10,"Twitter Media Extraction Programme","-"*10)
 
 #----------Creating a CSV file-------------#
 filename = "Twitter_API_Result.csv"
@@ -85,14 +85,14 @@ with open('hashtags.txt','r') as listOfHashtags:
    queryFirstLine=' OR '.join(hashtagsFirstLine)
    querySecondLine=' OR '.join(hashtagsSecondLine)
    twitterQuery='('+queryFirstLine+') '+'('+querySecondLine+')'
-   print(twitterQuery)
    
 #---User Input Paramters-----#
 twitterFilter= " -filter:retweets" + " filter:twimg"# Filtering on tweets with images and removing any retweets
 finalSearchQuery=twitterQuery+twitterFilter # Final Search query consisting of hashtags and filters
 startDate = input("\nEnter the start date for the search(YYYY-MM-DD)\n") # Date to start searching the Twitter database
 endDate=input("\nEnter the end date(exclusive) for the search(YYYY-MM-DD)\n") # Exclusive of the date. +1 this argument to include the date
-numberOfTweets=int(input("\nEnter the number of tweets you want to store\n"))
+numberOfPages=int(input("\nEnter the number of pages you want to receive\n")) # User defines the number of pages to receive
+numberOfTweetsPerPage=int(input("\nEnter the number of tweets you want to receive per page\n")) #User defines the number of tweets to receive
 
 #--- Initialising Data Structures for Twitter Data----#
 tweetImageNames=[]
@@ -118,47 +118,49 @@ if(authorisationFailure==0):
     api = tweepy.API(auth, wait_on_rate_limit=True,wait_on_rate_limit_notify=True,compression=True) # Using tweepy's API class
     
     #--- Fetching Twitter query data-----#
-    listOfTweetsAttributes=tweepy.Cursor(api.search,
+    listOfTweetPages=tweepy.Cursor(api.search,
                                          q=finalSearchQuery, # Search Query
                                          lang='en', # Language
                                          since=startDate, until=endDate,
+                                         count=numberOfTweetsPerPage, # Defines the tweets received per Page
                                          result_type='recent', # Returns recent tweets
                                          tweet_mode='extended', # Prevent getting truncated response as the return limit is 140 characters
                                          exclude_replies=True, # Remove replies
                                          include_entities=True, # This is required to capture full text and all images in a tweet
-                                         monitor_rate_limit=True).items(numberOfTweets)
-    
-    for tweet in listOfTweetsAttributes:
-        try:
-            #-------Processing raw date time data------------#
-            tweetDate,tweetTime=getDateTimeOfTweet(tweet.created_at) # Passing Time Stamps of tweet to extract date and time
-            
-            #------ Sanitising tweet caption----------#
-            tweetURL,tweetWithoutURL=separateUrl(tweet.full_text) # Passing the Twitter caption/ tweet description
-        
-            #----- Storing the meta data in a list ------------#
-            for image in  tweet.extended_entities['media']: # 'extended_entities' allows to loop through all media entities
-                dictOfMediaURL[uniqueIdentifierTweet].append(image['media_url']) # Dictionary allows to store tweets assiated with multiple images
-                downloadTwitterImage(image['media_url'],uniqueIdentifierTweet,uniqueIdenifierImage,".jpg") # Downloads the images in local folder
-                tweetImageNames.append(str(uniqueIdentifierTweet)+uniqueIdenifierImage) # Creates twitter image names such as '1' + 'a' = '1a'
-                uniqueIdenifierImage = chr(ord(uniqueIdenifierImage) + 1) # Increments when multiple images associated with a tweet
-            
-            #----- Storing Twitter Data into a CSV file using 'writeToTwitterCSV'
-            writeToTwitterCSV(csvWriter,uniqueIdentifierTweet,tweet.user.screen_name,tweetDate,tweetTime,tweetWithoutURL,tweetImageNames,dictOfMediaURL[uniqueIdentifierTweet],tweetURL)
-            
-            #-------Counter Reset/Inrementation--------#
-            uniqueIdentifierTweet,uniqueIdenifierImage,tweetImageNames=counterResetter(uniqueIdentifierTweet,uniqueIdenifierImage,tweetImageNames)
-            
-            #---- Update User with the API status-----#
-            if(uniqueIdentifierTweet%10==0): # Display a message to user every 10 tweets
-                print("Ten tweets added to CSV file")
+                                         monitor_rate_limit=True).pages(numberOfPages)
+
+    for pageNumber in listOfTweetPages: # Loops through each page as defined by the user
+        for i in range(numberOfTweetsPerPage): # Loops through every tweet per Page as defined by user as well. The counter 'i' defines the tweet number while visiting each page
+            try:
+                #-------Processing raw date time data------------#
+                tweetDate,tweetTime=getDateTimeOfTweet(pageNumber[i].created_at) # Passing Time Stamps of tweet to extract date and time
                 
-        except tweepy.TweepError as twitterError: # Raises an error when Twitter API fails
-            logTwitterError(uniqueIdentifierTweet,twitterError.reason) # Logs the error
-            uniqueIdentifierTweet,uniqueIdenifierImage,tweetImageNames=counterResetter(uniqueIdentifierTweet,uniqueIdenifierImage,tweetImageNames)
-        
-        except: # Raises an error when the programme fails due to any other reason except from twitter API
-            logTwitterError(uniqueIdentifierTweet,"Unknown error found") # Logs the error
-            uniqueIdentifierTweet,uniqueIdenifierImage,tweetImageNames=counterResetter(uniqueIdentifierTweet,uniqueIdenifierImage,tweetImageNames)
+                #------ Sanitising tweet caption----------#
+                tweetURL,tweetWithoutURL=separateUrl(pageNumber[i].full_text) # Passing the Twitter caption/ tweet description
+            
+                #----- Storing the meta data in a list ------------#
+                for image in  pageNumber[i].extended_entities['media']: # 'extended_entities' allows to loop through all media entities
+                    dictOfMediaURL[uniqueIdentifierTweet].append(image['media_url']) # Dictionary allows to store tweets assiated with multiple images
+                    downloadTwitterImage(image['media_url'],uniqueIdentifierTweet,uniqueIdenifierImage,".jpg") # Downloads the images in local folder
+                    tweetImageNames.append(str(uniqueIdentifierTweet)+uniqueIdenifierImage) # Creates twitter image names such as '1' + 'a' = '1a'
+                    uniqueIdenifierImage = chr(ord(uniqueIdenifierImage) + 1) # Increments when multiple images associated with a tweet
+                
+                #----- Storing Twitter Data into a CSV file using 'writeToTwitterCSV'
+                writeToTwitterCSV(csvWriter,uniqueIdentifierTweet,pageNumber[i].user.screen_name,tweetDate,tweetTime,tweetWithoutURL,tweetImageNames,dictOfMediaURL[uniqueIdentifierTweet],tweetURL)
+                
+                #-------Counter Reset/Incrementation--------#
+                uniqueIdentifierTweet,uniqueIdenifierImage,tweetImageNames=counterResetter(uniqueIdentifierTweet,uniqueIdenifierImage,tweetImageNames)
+                
+                #---- Update User with the API status-----#
+                if(uniqueIdentifierTweet%10==0): # Display a message to user every 10 tweets
+                    print("Ten tweets added to CSV file")
+                    
+            except tweepy.TweepError as twitterError: # Raises an error when Twitter API fails
+                logTwitterError(uniqueIdentifierTweet,twitterError.reason) # Logs the error
+                uniqueIdentifierTweet,uniqueIdenifierImage,tweetImageNames=counterResetter(uniqueIdentifierTweet,uniqueIdenifierImage,tweetImageNames)
+            
+            except: # Raises an error when the programme fails due to any other reason except from twitter API
+                logTwitterError(uniqueIdentifierTweet,"Unknown error found") # Logs the error
+                uniqueIdentifierTweet,uniqueIdenifierImage,tweetImageNames=counterResetter(uniqueIdentifierTweet,uniqueIdenifierImage,tweetImageNames)
     
     csvFileObject.close()
