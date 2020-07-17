@@ -26,8 +26,10 @@ conda install -c conda-forge tweepy
 
 2. Clone the 'hashtags.txt' and enter the query parameters separated by ','.All the queries in the first row are OR'd. This expression is then AND'd with the OR'd query expressions of second row. Example:
 
-2a. Row1: Science,Data
-2b. Row2. Research,Academic
+2a. Row1: Science,Data 
+
+2b. Row2: Research,Academic
+
 2c. Final Query= (Science OR Data) AND (Research OR Academic)
 
 3. Run 'TwitterAPI_Socialmedia_Extract.py'
