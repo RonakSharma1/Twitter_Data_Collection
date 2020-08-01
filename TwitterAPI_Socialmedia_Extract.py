@@ -11,7 +11,7 @@ import re
 import urllib.request 
 import csv
 from collections import defaultdict
-
+import sys
 #------------ Functions--------#
 
 # Extract date and time information from a tweet
@@ -102,7 +102,6 @@ authorisationFailure=0
 #--- Initialising Counters-----#
 uniqueIdentifierTweet=1
 uniqueIdenifierImage='a'
-
 #------- Authentication and Authorisation-----------#
 auth=tweepy.OAuthHandler(consumer_key,consumer_secret)
 auth.set_access_token(access_token,access_token_secret)
@@ -130,7 +129,7 @@ if(authorisationFailure==0):
                                          monitor_rate_limit=True).pages(numberOfPages)
 
     for pageNumber in listOfTweetPages: # Loops through each page as defined by the user
-        for i in range(numberOfTweetsPerPage): # Loops through every tweet per Page as defined by user as well. The counter 'i' defines the tweet number while visiting each page
+        for i in range(len(pageNumber)): # Loops through every tweet per Page as defined by user as well. The counter 'i' defines the tweet number while visiting each page
             try:
                 #-------Processing raw date time data------------#
                 tweetDate,tweetTime=getDateTimeOfTweet(pageNumber[i].created_at) # Passing Time Stamps of tweet to extract date and time
@@ -159,8 +158,10 @@ if(authorisationFailure==0):
                 logTwitterError(uniqueIdentifierTweet,twitterError.reason) # Logs the error
                 uniqueIdentifierTweet,uniqueIdenifierImage,tweetImageNames=counterResetter(uniqueIdentifierTweet,uniqueIdenifierImage,tweetImageNames)
             
-            except: # Raises an error when the programme fails due to any other reason except from twitter API
-                logTwitterError(uniqueIdentifierTweet,"Unknown error found") # Logs the error
+            except Exception as pythonError: #Log errors due to Python programme failing
+                errorType = sys.exc_info()[0]
+                finalError=str(errorType)+': '+str(pythonError) # Stores the exact error
+                logTwitterError(uniqueIdentifierTweet,finalError) # Logs the error
                 uniqueIdentifierTweet,uniqueIdenifierImage,tweetImageNames=counterResetter(uniqueIdentifierTweet,uniqueIdenifierImage,tweetImageNames)
     
     csvFileObject.close()
